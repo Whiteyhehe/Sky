@@ -1,0 +1,349 @@
+-- Load Orion Library
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+
+-- Create a window
+local Window = OrionLib:MakeWindow({
+    Name = "Funny exploit",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "CombatConfig"
+})
+
+-- Auto Hit Tab
+local AutoHitTab = Window:MakeTab({
+    Name = "Auto Hit",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Teleport Tab
+local TpTab = Window:MakeTab({
+    Name = "TP to Players",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Auto Break Bed Tab
+local AutoBreakBedTab = Window:MakeTab({
+    Name = "Auto Break Bed",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Bypass Anti-Cheat Tab
+local BypassTab = Window:MakeTab({
+    Name = "Bypass Anti-Cheat",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Variables
+local autoHitEnabled = false
+local tpEnabled = false
+local autoBreakEnabled = false
+local teleportToBedEnabled = false
+local visitedBeds = {}
+local hitDelay = 0
+
+-- Auto Hit Toggle
+AutoHitTab:AddToggle({
+    Name = "Auto Hit with Bronze Sword (within 20 studs)",
+    Default = false,
+    Callback = function(value)
+        autoHitEnabled = value
+        while autoHitEnabled do
+            task.wait(0) -- Continuous loop
+
+            -- Check if player is dead, continue if alive
+            local playerCharacter = game.Players.LocalPlayer.Character
+            if not playerCharacter or not playerCharacter:FindFirstChild("Humanoid") or playerCharacter.Humanoid.Health <= 0 then
+                -- Wait for respawn and continue the loop
+                repeat
+                    wait(1)
+                    playerCharacter = game.Players.LocalPlayer.Character
+                until playerCharacter and playerCharacter:FindFirstChild("Humanoid") and playerCharacter.Humanoid.Health > 0
+            end
+
+            -- Equip Bronze Sword
+            local args = {
+                [1] = "BronzeSword"
+            }
+            pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("kav"):WaitForChild("b5ec104e-8de7-48f1-8915-39966a59ef30"):FireServer(unpack(args))
+            end)
+
+            -- Perform Auto Hit within 20 studs
+            for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+                if player ~= game.Players.LocalPlayer then
+                    local playerCharacter = player.Character
+                    if playerCharacter and playerCharacter:FindFirstChild("HumanoidRootPart") then
+                        local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - playerCharacter.HumanoidRootPart.Position).magnitude
+                        if distance <= 20 then  -- Check if player is within 20 studs
+                            local args = {
+                                [1] = player
+                            }
+                            pcall(function()
+                                game:GetService("ReplicatedStorage"):WaitForChild("kav"):WaitForChild("13166fd0-1618-4057-9a33-55dfd439d66e"):FireServer(unpack(args))
+                            end)
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+AutoHitTab:AddTextbox({
+    Name = "Delay Between Hits (seconds)",
+    Default = "0",  -- Default is 0 seconds
+    TextDisappear = true,
+    Callback = function(value)
+        -- Ensure the value entered is a valid number
+        local delay = tonumber(value)
+        if delay then
+            hitDelay = delay
+        else
+            hitDelay = 0  -- If invalid input, default to 0
+        end
+    end
+})
+
+-- Teleport to All Players and Follow
+TpTab:AddToggle({
+    Name = "TP to All Players and Follow (Exclude Same Team)",
+    Default = false,
+    Callback = function(value)
+        tpEnabled = value
+        local TeleportTime = 3 -- Time interval to teleport to the next player (in seconds)
+
+        -- Function to teleport to a player
+        local function teleportToPlayer(player)
+            local character = player.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local humanoidRootPart = character.HumanoidRootPart
+                local playerCharacter = game.Players.LocalPlayer.Character
+                if playerCharacter and playerCharacter:FindFirstChild("HumanoidRootPart") then
+                    local newPosition = humanoidRootPart.Position + Vector3.new(0, 18, 0)
+                    playerCharacter.HumanoidRootPart.CFrame = CFrame.new(newPosition)
+                end
+            end
+        end
+
+        -- Main loop for teleportation
+        while tpEnabled do
+            if not tpEnabled then break end
+
+            local localPlayer = game.Players.LocalPlayer
+            local localTeamId = localPlayer:GetAttribute("TeamId")
+
+            for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+                local playerTeamId = player:GetAttribute("TeamId")
+
+                if player ~= localPlayer and playerTeamId ~= localTeamId then
+                    local startTime = tick()
+                    local character = player.Character
+                    if character then
+                        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                        if humanoidRootPart then
+                            local lastPosition = humanoidRootPart.Position
+                            teleportToPlayer(player)
+
+                            while tick() - startTime < TeleportTime do
+                                if humanoidRootPart.Position ~= lastPosition then
+                                    teleportToPlayer(player)
+                                    lastPosition = humanoidRootPart.Position
+                                end
+                                wait(0)
+                            end
+                        end
+                    end
+                end
+            end
+            wait(TeleportTime)
+        end
+    end
+})
+
+-- Auto Break Bed Feature
+AutoBreakBedTab:AddLabel("Only breaks when close to bed")
+
+AutoBreakBedTab:AddToggle({
+    Name = "Auto Break Beds with Bronze Pickaxe",
+    Default = false,
+    Callback = function(value)
+        autoBreakEnabled = value
+        while autoBreakEnabled do
+            task.wait(0) -- Continuous loop
+
+            -- Equip Bronze Pickaxe
+            local args = {
+                [1] = "BronzePickaxe"
+            }
+            pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("kav"):WaitForChild("b5ec104e-8de7-48f1-8915-39966a59ef30"):FireServer(unpack(args))
+            end)
+
+            -- Perform Bed Breaking
+            local blockContainer = workspace:FindFirstChild("BlockContainer")
+            if blockContainer then
+                local targets = {
+                    blockContainer:GetChildren()[3],
+                    blockContainer:GetChildren()[5],
+                    blockContainer:GetChildren()[4],
+                    blockContainer:FindFirstChild("ShimBlock")
+                }
+
+                for _, target in pairs(targets) do
+                    if target and target.Position then
+                        local args = {
+                            [1] = target.Position
+                        }
+                        pcall(function()
+                            game:GetService("ReplicatedStorage"):WaitForChild("kav"):WaitForChild("68e3d2fe-fc3c-4e73-83cb-d890f76d5281"):FireServer(unpack(args))
+                        end)
+                    end
+                end
+            end
+        end
+    end
+})
+
+-- Teleport to Bed Every 3 Seconds (Avoid Same Bed) with Position Lock
+AutoBreakBedTab:AddToggle({
+    Name = "Teleport to Bed Every 3 Seconds (Avoid Same Bed)",
+    Default = false,
+    Callback = function(value)
+        teleportToBedEnabled = value
+        visitedBeds = {} -- Clear the visited beds list when toggled on
+        while teleportToBedEnabled do
+            task.wait(0) -- Wait for 3 seconds
+
+            local blockContainer = workspace:FindFirstChild("BlockContainer")
+            if blockContainer then
+                -- Access the target blocks dynamically
+                local targets = {
+                    blockContainer:GetChildren()[3],
+                    blockContainer:GetChildren()[5],
+                    blockContainer:GetChildren()[4],
+                    blockContainer:FindFirstChild("ShimBlock")
+                }
+
+                -- Remove visited beds from the list
+                local unvisitedBeds = {}
+                for _, target in pairs(targets) do
+                    if target and target.Position and not visitedBeds[target] then
+                        table.insert(unvisitedBeds, target)
+                    end
+                end
+
+                -- If there are any unvisited beds, teleport to one
+                if #unvisitedBeds > 0 then
+                    -- Select a random unvisited bed
+                    local randomTarget = unvisitedBeds[math.random(1, #unvisitedBeds)]
+                    if randomTarget and randomTarget.Position then
+                        -- Teleport to bed (2 studs below the bed)
+                        local targetPosition = randomTarget.Position - Vector3.new(0, 21, 0)  -- Offset  studs below the bed
+                        pcall(function()
+                            game.Players.LocalPlayer.Character:MoveTo(targetPosition)
+                        end)
+
+                        -- Lock the position using BodyPosition to prevent movement
+                        local humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
+                        local bodyPosition = Instance.new("BodyPosition")
+                        bodyPosition.MaxForce = Vector3.new(400000, 400000, 400000) -- Increase force to lock position
+                        bodyPosition.D = 1000
+                        bodyPosition.P = 10000
+                        bodyPosition.Position = targetPosition
+                        bodyPosition.Parent = game.Players.LocalPlayer.Character.HumanoidRootPart
+
+                        -- Add the bed to visited list
+                        visitedBeds[randomTarget] = true
+
+                        -- Wait for 3 seconds before removing the BodyPosition and moving to the next bed
+                        task.wait(3)
+                        bodyPosition:Destroy() -- Release the position lock after 3 seconds
+                    end
+                else
+                    -- If all beds have been visited, reset the visited beds list
+                    visitedBeds = {}
+                end
+            end
+        end
+    end
+})
+
+-- Add the Auto Buy Tab
+local AutoBuyTab = Window:MakeTab({
+    Name = "Auto Buy",
+    Icon = "rbxassetid://4483345998", -- Example icon (can be replaced)
+    PremiumOnly = false
+})
+
+-- Add toggles for Auto Buy
+local autoBuySword = false
+local autoBuyArmor = false
+local autoBuyPickaxe = false
+
+AutoBuyTab:AddToggle({
+    Name = "Auto Buy Sword",
+    Default = false,
+    Callback = function(Value)
+        autoBuySword = Value
+        while autoBuySword do
+            local args = {
+                [1] = "Blacksmith",
+                [2] = 1
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("kav"):WaitForChild("b5b779fb-3926-46b2-a785-608dcbf8b022"):FireServer(unpack(args))
+            wait(1) -- Prevent spamming the server
+        end
+    end
+})
+
+AutoBuyTab:AddToggle({
+    Name = "Auto Buy Armor",
+    Default = false,
+    Callback = function(Value)
+        autoBuyArmor = Value
+        while autoBuyArmor do
+            local args = {
+                [1] = "Blacksmith",
+                [2] = 0
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("kav"):WaitForChild("b5b779fb-3926-46b2-a785-608dcbf8b022"):FireServer(unpack(args))
+            wait(1) -- Prevent spamming the server
+        end
+    end
+})
+
+AutoBuyTab:AddToggle({
+    Name = "Auto Buy Pickaxe",
+    Default = false,
+    Callback = function(Value)
+        autoBuyPickaxe = Value
+        while autoBuyPickaxe do
+            local args = {
+                [1] = "Blacksmith",
+                [2] = 2
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("kav"):WaitForChild("b5b779fb-3926-46b2-a785-608dcbf8b022"):FireServer(unpack(args))
+            wait(1) -- Prevent spamming the server
+        end
+    end
+})
+
+
+-- Bypass Anti-Cheat Button
+BypassTab:AddButton({
+    Name = "Bypass Anti-Cheat",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "Anti-Cheat Bypassed",
+            Content = "You have successfully bypassed the anti-cheat system!",
+            Time = 5
+        })
+    end
+})
+
+-- Initialize Orion Library
+OrionLib:Init()
