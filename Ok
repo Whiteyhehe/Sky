@@ -3,7 +3,7 @@ local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shle
 
 -- Create a window
 local Window = OrionLib:MakeWindow({
-    Name = "Funny exploit",
+    Name = "Skywars",
     HidePremium = false,
     SaveConfig = true,
     ConfigFolder = "CombatConfig"
@@ -18,7 +18,7 @@ local AutoHitTab = Window:MakeTab({
 
 -- Teleport Tab
 local TpTab = Window:MakeTab({
-    Name = "TP to Players",
+    Name = "Kill Players",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
@@ -47,7 +47,7 @@ local hitDelay = 0
 
 -- Auto Hit Toggle
 AutoHitTab:AddToggle({
-    Name = "Auto Hit with Bronze Sword (within 20 studs)",
+    Name = "Multi Aura",
     Default = false,
     Callback = function(value)
         autoHitEnabled = value
@@ -59,7 +59,7 @@ AutoHitTab:AddToggle({
             if not playerCharacter or not playerCharacter:FindFirstChild("Humanoid") or playerCharacter.Humanoid.Health <= 0 then
                 -- Wait for respawn and continue the loop
                 repeat
-                    wait(1)
+                    wait(0)
                     playerCharacter = game.Players.LocalPlayer.Character
                 until playerCharacter and playerCharacter:FindFirstChild("Humanoid") and playerCharacter.Humanoid.Health > 0
             end
@@ -94,7 +94,7 @@ AutoHitTab:AddToggle({
 })
 
 AutoHitTab:AddTextbox({
-    Name = "Delay Between Hits (seconds)",
+    Name = "Delay Customization",
     Default = "0",  -- Default is 0 seconds
     TextDisappear = true,
     Callback = function(value)
@@ -110,7 +110,7 @@ AutoHitTab:AddTextbox({
 
 -- Teleport to All Players and Follow
 TpTab:AddToggle({
-    Name = "TP to All Players and Follow (Exclude Same Team)",
+    Name = "Kill Players",
     Default = false,
     Callback = function(value)
         tpEnabled = value
@@ -168,7 +168,7 @@ TpTab:AddToggle({
 AutoBreakBedTab:AddLabel("Only breaks when close to bed")
 
 AutoBreakBedTab:AddToggle({
-    Name = "Auto Break Beds with Bronze Pickaxe",
+    Name = "Nuker",
     Default = false,
     Callback = function(value)
         autoBreakEnabled = value
@@ -210,7 +210,7 @@ AutoBreakBedTab:AddToggle({
 
 -- Teleport to Bed Every 3 Seconds (Avoid Same Bed) with Position Lock
 AutoBreakBedTab:AddToggle({
-    Name = "Teleport to Bed Every 3 Seconds (Avoid Same Bed)",
+    Name = "teleport to bed",
     Default = false,
     Callback = function(value)
         teleportToBedEnabled = value
@@ -337,9 +337,13 @@ AutoBuyTab:AddToggle({
 BypassTab:AddButton({
     Name = "Bypass Anti-Cheat",
     Callback = function()
+        -- Execute the Infinite Yield script from the URL
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        
+        -- Optionally notify the user
         OrionLib:MakeNotification({
-            Name = "Anti-Cheat Bypassed",
-            Content = "You have successfully bypassed the anti-cheat system!",
+            Name = "Infinite Yield Loaded",
+            Content = "You have successfully loaded Infinite Yield!",
             Time = 5
         })
     end
